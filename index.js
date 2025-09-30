@@ -1,24 +1,24 @@
-import net from "net";
+import sgMail from "@sendgrid/mail";
 
-const host = "smtp.gmail.com";
-const port = 587;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-console.log(`🌐 Testing connection to ${host}:${port}...`);
+const toEmail = process.env.TEST_TO_EMAIL; 
+const fromEmail = process.env.TEST_FROM_EMAIL;
 
-const socket = net.connect(port, host);
+(async () => {
+  try {
+    const msg = {
+      to: toEmail,
+      from: fromEmail,
+      subject: "Render SendGrid Test",
+      text: "This is a test email sent from Render using SendGrid API",
+      html: "<strong>This is a test email sent from Render using SendGrid API</strong>",
+    };
 
-socket.setTimeout(5000);
-
-socket.on("connect", () => {
-  console.log(`✅ Connected to ${host}:${port}`);
-  socket.end();
-});
-
-socket.on("timeout", () => {
-  console.error(`⏳ Timeout: cannot reach ${host}:${port}`);
-  socket.destroy();
-});
-
-socket.on("error", (err) => {
-  console.error(`❌ Error: ${err.message}`);
-});
+    const [response] = await sgMail.send(msg);
+    console.log("Email sent successfully!");
+    console.log("Status Code:", response.statusCode);
+  } catch (error) {
+    console.error("Failed to send email:", error);
+  }
+})();
